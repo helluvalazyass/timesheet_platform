@@ -3,6 +3,11 @@ const express = require('express')
 const path = require('path')
 const morgan = require('morgan')
 const mongooose = require('mongoose')
+const cookieParser = require('cookie-parser')
+// const cors = require('cors')
+// const Project = require('./models/project-model')
+// const Timesheet = require('./models/timesheet-model')
+
 
 const fs = require('fs')
 const rfs = require('rotating-file-stream')
@@ -12,6 +17,9 @@ const rfs = require('rotating-file-stream')
 // const router = express.Router()
 
 const userRouter = require('./routers/user_router')
+const projectRouter = require('./routers/project_router')
+const timesheetRouter = require('./routers/timesheet_router')
+const calendarRouter = require('./routers/calendar_router')
 
 const port = process.env.PORT || 3000
 const logDirectory = path.join(__dirname, 'log')
@@ -60,7 +68,18 @@ const app = express()
 //   res.send('wow page')
 // })
 
+// app.use(cors())
 
+
+// cors middleware
+app.use(function(req, res, next) {
+  res.setHeader('Access-Control-Allow-Credentials', true)
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001')
+  res.setHeader('Access-Control-Allow-Headers', 'content-type')
+  next()
+})
+
+app.use(cookieParser())
 app.use(express.json())
 
 // const logWriteStream = fs.createWriteStream(path.join(__dirname, 'dev.log'), { flags: 'a' })
@@ -78,15 +97,32 @@ app.use(morgan('combined', { stream: logWriteStream }))
 
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/api', userRouter)
-
-
-
-
+app.use('/api/user', userRouter)
+app.use('/api/project', projectRouter)
+app.use('/api/timesheet', timesheetRouter)
+app.use('/api/calendar', calendarRouter)
 
 app.use(function(req, res) {
   res.status(404).send("sorry ! page not found")
 })
+
+
+// const pro = new Project({
+//   name: 'Project3',
+//   phases: [{
+//     name: 'Phase1',
+//     sequence: 1
+//   },{
+//     name: 'Phase3',
+//     sequence: 2
+//   }]
+// })
+
+// pro.save().then(()=> {
+//   console.log('saved!')
+// }).catch((e) => {
+//   console.log(e)
+// })
 
 app.listen(port, () => {
   console.log(`server running at port: ${port}`)
